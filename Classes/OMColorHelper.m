@@ -12,6 +12,7 @@
 
 #define kOMColorHelperHighlightingDisabled	@"OMColorHelperHighlightingDisabled"
 #define kOMColorHelperInsertionMode			@"OMColorHelperInsertionMode"
+#define kOMColorHelperColorLanguage			@"kOMColorHelperColorLanguage"  //1 Swift  0 ObjectiveC
 
 @implementation OMColorHelper
 
@@ -78,14 +79,24 @@
 		NSMenuItem *colorInsertionModeUIItem = [[NSMenuItem alloc] initWithTitle:@"UIColor" action:@selector(selectUIColorInsertionMode:) keyEquivalent:@""];
 		[colorInsertionModeUIItem setTarget:self];
 		
+        NSMenu *colorInsertionModeMenu = [[NSMenu alloc] initWithTitle:@"Color Insertion Mode"];
+        [colorInsertionModeItem setSubmenu:colorInsertionModeMenu];
+        [[colorInsertionModeItem submenu] addItem:colorInsertionModeUIItem];
+        [[colorInsertionModeItem submenu] addItem:colorInsertionModeNSItem];
+        [[editMenuItem submenu] addItem:colorInsertionModeItem];
         
+        NSMenuItem *colorLanguageItem = [[NSMenuItem alloc] initWithTitle:@"Color Language Mode" action:nil keyEquivalent:@""];
+        NSMenuItem *colorLanguageSwiftItem = [[NSMenuItem alloc] initWithTitle:@"Swift" action:@selector(selectSwiftColorLanguage:) keyEquivalent:@""];
+        [colorLanguageSwiftItem setTarget:self];
+        NSMenuItem *colorLanguageOCItem = [[NSMenuItem alloc] initWithTitle:@"ObjectiveC" action:@selector(selectOCColorLanguage:) keyEquivalent:@""];
+        [colorLanguageOCItem setTarget:self];
         
-        
-		NSMenu *colorInsertionModeMenu = [[NSMenu alloc] initWithTitle:@"Color Insertion Mode"];
-		[colorInsertionModeItem setSubmenu:colorInsertionModeMenu];
-		[[colorInsertionModeItem submenu] addItem:colorInsertionModeUIItem];
-		[[colorInsertionModeItem submenu] addItem:colorInsertionModeNSItem];
-		[[editMenuItem submenu] addItem:colorInsertionModeItem];
+        NSMenu *colorLanguageMenu = [[NSMenu alloc] initWithTitle:@"Color Language Mode"];
+        [colorLanguageItem setSubmenu:colorLanguageMenu];
+        [[colorLanguageItem submenu] addItem:colorLanguageSwiftItem];
+        [[colorLanguageItem submenu] addItem:colorLanguageOCItem];
+        [[editMenuItem submenu] addItem:colorLanguageItem];
+		
 		
 		NSMenuItem *insertColorMenuItem = [[NSMenuItem alloc] initWithTitle:@"Insert Color..." action:@selector(insertColor:) keyEquivalent:@""];
 		[insertColorMenuItem setTarget:self];
@@ -113,9 +124,26 @@
 		[menuItem setState:[[NSUserDefaults standardUserDefaults] integerForKey:kOMColorHelperInsertionMode] == 1 ? NSOnState : NSOffState];
 	} else if ([menuItem action] == @selector(selectUIColorInsertionMode:)) {
 		[menuItem setState:[[NSUserDefaults standardUserDefaults] integerForKey:kOMColorHelperInsertionMode] == 0 ? NSOnState : NSOffState];
-	}
+    } else if ([menuItem action] == @selector(selectSwiftColorLanguage:)) {
+        [menuItem setState:[[NSUserDefaults standardUserDefaults] integerForKey:kOMColorHelperColorLanguage] == 1 ? NSOnState : NSOffState];
+    } else if ([menuItem action] == @selector(selectOCColorLanguage:)) {
+        [menuItem setState:[[NSUserDefaults standardUserDefaults] integerForKey:kOMColorHelperColorLanguage] == 0 ? NSOnState : NSOffState];
+    }
+    
 	return YES;
 }
+
+
+- (void)selectSwiftColorLanguage:(id)sender
+{
+    [[NSUserDefaults standardUserDefaults] setInteger:1 forKey:kOMColorHelperColorLanguage];
+}
+
+- (void)selectOCColorLanguage:(id)sender
+{
+    [[NSUserDefaults standardUserDefaults] setInteger:0 forKey:kOMColorHelperColorLanguage];
+}
+
 
 - (void)selectNSColorInsertionMode:(id)sender
 {
@@ -181,10 +209,25 @@
 	}
 	[self.textView.undoManager beginUndoGrouping];
 	NSInteger insertionMode = [[NSUserDefaults standardUserDefaults] integerForKey:kOMColorHelperInsertionMode];
+    NSInteger colorLanguage = [[NSUserDefaults standardUserDefaults] integerForKey:kOMColorHelperColorLanguage];
+    
 	if (insertionMode == 0) {
-		[self.textView insertText:@"[UIColor colorWithRed:1.0 green:0.0 blue:0.0 alpha:1.0]" replacementRange:self.textView.selectedRange];
+        
+        if (colorLanguage == 1) {
+            //swift
+            [self.textView insertText:@"UIColor(red: 1.0, green: 0.0, blue: 0.0, alpha: 1.0)" replacementRange:self.textView.selectedRange];
+        }else {
+            //oc
+            [self.textView insertText:@"[UIColor colorWithRed:1.0 green:0.0 blue:0.0 alpha:1.0]" replacementRange:self.textView.selectedRange];
+        }
 	} else {
-		[self.textView insertText:@"[NSColor colorWithCalibratedRed:1.0 green:0.0 blue:0.0 alpha:1.0]" replacementRange:self.textView.selectedRange];
+        if (colorLanguage == 1) {
+            //swift
+            [self.textView insertText:@"[NSColor colorWithCalibratedRed:1.0 green:0.0 blue:0.0 alpha:1.0]" replacementRange:self.textView.selectedRange];
+        }else {
+            //oc
+            [self.textView insertText:@"NSColor(calibratedRed:1.0 green:0.0 blue:0.0 alpha:1.0)" replacementRange:self.textView.selectedRange];
+        }
 	}
 	[self.textView.undoManager endUndoGrouping];
 	[self performSelector:@selector(activateColorWell) withObject:nil afterDelay:0.0];
