@@ -26,7 +26,14 @@ typedef enum OMColorType {
 	
 } OMColorType;
 
+typedef enum OMColorLanguage {
+  OMColorLanguageDefault = 0,
+  OMColorLanguageObjectiveC = 1,
+  OMColorLanguageSwift = 2,
+} OMColorLanguage;
+
 BOOL OMColorTypeIsNSColor(OMColorType colorType) { return colorType >= OMColorTypeNSRGBACalibrated; }
+BOOL OMColorLanguageIsSwift(OMColorLanguage colorLanguage) { return colorLanguage == OMColorLanguageSwift; }
 
 //TODO: Maybe support HSB and CMYK color types...
 
@@ -46,6 +53,9 @@ BOOL OMColorTypeIsNSColor(OMColorType colorType) { return colorType >= OMColorTy
 	NSRegularExpression *_whiteNSColorRegex;
 	NSRegularExpression *_whiteUIColorRegex;
 	NSRegularExpression *_constantColorRegex;
+  NSRegularExpression *_constantSwiftColorRegex;
+  NSRegularExpression *_rgbaSwiftUIColorRegex;
+  NSRegularExpression *_whiteSwiftUIColorRegex;
 }
 
 @property (nonatomic, strong) OMPlainColorWell *colorWell;
@@ -53,12 +63,13 @@ BOOL OMColorTypeIsNSColor(OMColorType colorType) { return colorType >= OMColorTy
 @property (nonatomic, strong) NSTextView *textView;
 @property (nonatomic, assign) NSRange selectedColorRange;
 @property (nonatomic, assign) OMColorType selectedColorType;
+@property (nonatomic, assign) OMColorLanguage selectedColorLanguage;
 
 - (void)dismissColorWell;
 - (void)activateColorHighlighting;
 - (void)deactivateColorHighlighting;
-- (NSColor *)colorInText:(NSString *)text selectedRange:(NSRange)selectedRange type:(OMColorType *)type matchedRange:(NSRangePointer)matchedRange;
-- (NSString *)colorStringForColor:(NSColor *)color withType:(OMColorType)colorType;
+- (NSColor *)colorInText:(NSString *)text selectedRange:(NSRange)selectedRange type:(OMColorType *)type language:(OMColorLanguage *)language matchedRange:(NSRangePointer)matchedRange;
+- (NSString *)colorStringForColor:(NSColor *)color withType:(OMColorType)colorType language:(OMColorLanguage)colorLanguage;
 - (double)dividedValue:(double)value withDivisorRange:(NSRange)divisorRange inString:(NSString *)text;
 
 @end
